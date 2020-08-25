@@ -86,6 +86,7 @@ class MetricLogger:
         :param num_batches: ``int``, number of batches
         :param normalize: if True normalize images
         """
+        images = images[:num_samples, ...]
         horizontal_grid = torchvision.utils.make_grid(images, normalize=normalize, scale_each=True)
         nrows = int(np.sqrt(num_samples))
         grid = torchvision.utils.make_grid(images, nrow=nrows, normalize=normalize, scale_each=True)
