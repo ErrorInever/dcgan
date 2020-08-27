@@ -35,7 +35,7 @@ class MetricLogger:
             losswise.set_api_key(self.ls_api_key)
             self.session = losswise.Session(
                     tag=model_name,
-                    max_iter=cfg.NUM_EPOCH,
+                    max_iter=cfg.NUM_EPOCHS,
                     track_git=False
                     )
             self.graph_loss = self.session.graph('loss', kind='min')
