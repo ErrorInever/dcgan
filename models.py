@@ -10,7 +10,7 @@ class Generator(nn.Module):
         self.out_channels = out_channels
 
         self.head = nn.Sequential(
-            nn.ConvTranspose2d(z_size, 1024, 4, 0, bias=False),
+            nn.ConvTranspose2d(z_size, 1024, 4, 1, 0, bias=False),
             nn.BatchNorm2d(1024),
             nn.ReLU(inplace=True)
         )
