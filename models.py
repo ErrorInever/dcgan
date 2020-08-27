@@ -1,9 +1,48 @@
 from torch import nn
 
 
+class Discriminator(nn.Module):
+
+    def __init__(self, in_channels, ngpu):
+        """
+        :param in_channels: ``int``, in channels (out_channels from Generator)
+        :param ngpu: number of GPUs available
+        """
+        super().__init__()
+        self.ngpu = ngpu
+        self.in_channels = in_channels
+
+        self.head = nn.Sequential(
+            nn.Conv2d(in_channels, 64, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+        )
+        self.body = nn.Sequential(
+            nn.Conv2d(64, 128, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(128, 256, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(256, 512, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(512, 1, 4, 1, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        x = self.head(x)
+        x = self.body(x)
+        return x
+
 class Generator(nn.Module):
 
     def __init__(self, z_size, out_channels, ngpu):
+        """
+        :param z_size: ``int``, input vector size (latent space)
+        :param out_channels: ``int``, out channels
+        :param ngpu: number of GPUs available
+        """
         super().__init__()
         self.ngpu = ngpu
         self.z_size = z_size
