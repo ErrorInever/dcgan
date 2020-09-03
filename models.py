@@ -47,6 +47,7 @@ class Discriminator(nn.Module):
         x = self.body(x)
         return x
 
+
 class Generator(nn.Module):
 
     def __init__(self, z_size, out_channels, ngpu):
