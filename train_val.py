@@ -9,6 +9,8 @@ from torch.utils.data.dataloader import DataLoader
 from config.conf import cfg
 from models import *
 from metric_logger import MetricLogger
+from utils import latent_space
+from train import train_one_epoch
 
 
 def set_random_seed(val):
@@ -67,9 +69,7 @@ if __name__ == "__main__":
 
     criterion = nn.BCELoss()
 
-    static_noise = torch.randn(64, 100, 1, 1, device=device)
-    real_label = 1.
-    fake_label = 0.
+    static_noise = latent_space(64, device=device)
 
     G_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
     D_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
@@ -78,4 +78,10 @@ if __name__ == "__main__":
 
     start_time = time.time()
     for epoch in range(cfg.NUM_EPOCHS):
-        pass
+        train_one_epoch(generator, discriminator, dataloader, G_optimizer, D_optimizer, criterion, device, epoch,
+                        static_noise, metric_logger, num_sumples=16, freq=100)
+
+    if args.save_models:
+        metric_logger.save_models(generator, discriminator, cfg.NUM_EPOCHS)
+    total_time = time.time() - start_time
+    print('Training time {}'.format(total_time))
