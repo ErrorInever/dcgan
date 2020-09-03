@@ -44,37 +44,37 @@ class MetricLogger:
         if self.tensorboard:
             self.tf_logger = SummaryWriter(comment=self.comment)
 
-    def log(self, dis_loss, gen_loss, acc_real, acc_fake, epoch, n_batch, num_batches):
+    def log(self, D_loss, G_loss, pred_real, pred_fake, epoch, n_batch, num_batches):
         """
         Logging training values
-        :param dis_loss: ``torch.autograd.Variable``, discriminator loss
-        :param gen_loss: ``torch.autograd.Variable``, generator loss
-        :param acc_real: ``torch.autograd.Variable``, discriminator predicted on real data
-        :param acc_fake: ``torch.autograd.Variable``, discriminator predicted on fake data
+        :param D_loss: ``torch.autograd.Variable``, discriminator loss
+        :param G_loss: ``torch.autograd.Variable``, generator loss
+        :param pred_real: ``torch.autograd.Variable``, discriminator predicted on real data
+        :param pred_fake: ``torch.autograd.Variable``, discriminator predicted on fake data
         :param epoch: ``int``, current epoch
         :param n_batch: ``int``, current batch
         :param num_batches: ``int``, number of batches
         """
-        if isinstance(dis_loss, torch.autograd.Variable):
-            dis_loss = dis_loss.item()
-        if isinstance(gen_loss, torch.autograd.Variable):
-            gen_loss = gen_loss.item()
-        if isinstance(acc_real, torch.autograd.Variable):
-            acc_real = acc_real.float().mean().item()
-        if isinstance(acc_fake, torch.autograd.Variable):
-            acc_fake = acc_fake.float().mean().item()
+        if isinstance(D_loss, torch.autograd.Variable):
+            D_loss = D_loss.item()
+        if isinstance(G_loss, torch.autograd.Variable):
+            G_loss = G_loss.item()
+        if isinstance(pred_real, torch.autograd.Variable):
+            pred_real = pred_real.float().mean().item()
+        if isinstance(pred_fake, torch.autograd.Variable):
+            pred_fake = pred_fake.float().mean().item()
 
         step = MetricLogger._step(epoch, n_batch, num_batches)
 
         if self.ls_api_key:
-            self.graph_loss.append(step, {'Discriminator': dis_loss, 'Generator': gen_loss})
-            self.graph_acc.append(step, {'D(x)': acc_real, 'D(G(z))': acc_fake})
+            self.graph_loss.append(step, {'Discriminator': D_loss, 'Generator': G_loss})
+            self.graph_acc.append(step, {'D(x)': pred_real, 'D(G(z))': pred_fake})
 
         if self.tensorboard:
-            self.tf_logger.add_scalar('loss/dis', dis_loss, step)
-            self.tf_logger.add_scalar('loss/gen', gen_loss, step)
-            self.tf_logger.add_scalar('acc/D(x)', acc_real, step)
-            self.tf_logger.add_scalar('acc/D(G(z))', acc_fake, step)
+            self.tf_logger.add_scalar('loss/dis', D_loss, step)
+            self.tf_logger.add_scalar('loss/gen', G_loss, step)
+            self.tf_logger.add_scalar('acc/D(x)', pred_real, step)
+            self.tf_logger.add_scalar('acc/D(G(z))', pred_fake, step)
 
     def log_image(self, images, num_samples, epoch, n_batch, num_batches, normalize=True):
         """
@@ -131,6 +131,14 @@ class MetricLogger:
     def close(self):
         self.session.done()
         self.tf_logger.close()
+
+    def save_models(self, generator, discriminator, epoch):
+        out_dir = './data/models/{}'.format(self.data_subdir)
+        MetricLogger._make_dir(out_dir)
+        torch.save(generator.state_dict(),
+                   '{}/G_epoch_{}'.format(out_dir, epoch))
+        torch.save(discriminator.state_dict(),
+                   '{}/D_epoch_{}'.format(out_dir, epoch))
 
     @staticmethod
     def display_status(epoch, num_epochs, n_batch, num_batches, dis_loss, gen_loss, acc_real, acc_fake):
