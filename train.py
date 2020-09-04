@@ -37,6 +37,7 @@ def train_one_epoch(generator, discriminator, dataloader, G_optimizer, D_optimiz
     for n_batch, (real_batch, _) in enumerate(dataloader):
         n = real_batch.size(0)
 
+        real_data = real_batch.to(device)
         real_labels = ones_target(n).to(device)
         fake_labels = zeros_target(n).to(device)
 
@@ -44,7 +45,7 @@ def train_one_epoch(generator, discriminator, dataloader, G_optimizer, D_optimiz
         noise = latent_space(n, device=device)
         fake_data = generator(noise)  # [n, 3, 64, 64]
         D_loss, pred_real, pred_fake = train_discriminator(discriminator, D_optimizer, criterion,
-                                                           real_batch, real_labels, fake_data, fake_labels)
+                                                           real_data, real_labels, fake_data, fake_labels)
         # 2. train generator
         noise = latent_space(n, device=device)
         fake_data = generator(noise)
