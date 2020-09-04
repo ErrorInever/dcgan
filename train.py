@@ -7,12 +7,12 @@ def train_discriminator(discriminator, D_optimizer, criterion, real_data, real_l
     D_optimizer.zero_grad()
 
     # 1. train on real data
-    predic_real = discriminator(real_data)
+    predic_real = discriminator(real_data).view(-1)
     loss_on_real = criterion(predic_real, real_labels)
     loss_on_real.backward()
 
     # 2. train on fake data
-    predic_fake = discriminator(fake_data)
+    predic_fake = discriminator(fake_data).view(-1)
     loss_on_fake = criterion(predic_fake, fake_labels)
     loss_on_fake.backward()
 
@@ -25,7 +25,7 @@ def train_discriminator(discriminator, D_optimizer, criterion, real_data, real_l
 
 def train_generator(discriminator, G_optimizer, criterion, fake_data, real_labels):
     G_optimizer.zero_grad()
-    predict = discriminator(fake_data)
+    predict = discriminator(fake_data).view(-1)
     loss = criterion(predict, real_labels)
     loss.backward()
     G_optimizer.step()
@@ -38,8 +38,8 @@ def train_one_epoch(generator, discriminator, dataloader, G_optimizer, D_optimiz
         n = real_batch.size(0)
 
         real_data = real_batch.to(device)
-        real_labels = ones_target(n).to(device)
-        fake_labels = zeros_target(n).to(device)
+        real_labels = ones_target(n, device)
+        fake_labels = zeros_target(n, device)
 
         # 1. train discriminator
         noise = latent_space(n, device=device)
@@ -57,6 +57,6 @@ def train_one_epoch(generator, discriminator, dataloader, G_optimizer, D_optimiz
         if n_batch % freq == 0:
             with torch.no_grad():
                 static_fake_data = generator(static_noise)
-                metric_logger.log_images(static_fake_data, num_sumples, epoch, n_batch, len(dataloader))
+                metric_logger.log_image(static_fake_data, num_sumples, epoch, n_batch, len(dataloader))
                 metric_logger.display_status(epoch, cfg.NUM_EPOCHS, n_batch, len(dataloader), D_loss, G_loss,
                                              pred_real, pred_fake)
