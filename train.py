@@ -2,6 +2,7 @@ import torch
 from utils import latent_space, ones_target, zeros_target
 from config.conf import cfg
 
+
 def train_discriminator(discriminator, D_optimizer, criterion, real_data, real_labels, fake_data, fake_labels):
     D_optimizer.zero_grad()
 
