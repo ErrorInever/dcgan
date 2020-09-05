@@ -35,8 +35,8 @@ def parse_args():
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     ch = logging.StreamHandler()
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
+    logger.setLevel(logging.WARNING)
+    ch.setLevel(logging.WARNING)
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
