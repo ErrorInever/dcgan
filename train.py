@@ -7,20 +7,20 @@ def train_discriminator(discriminator, D_optimizer, criterion, real_data, real_l
     D_optimizer.zero_grad()
 
     # 1. train on real data
-    predic_real = discriminator(real_data).view(-1)
-    loss_on_real = criterion(predic_real, real_labels)
+    predict_real = discriminator(real_data).view(-1)
+    loss_on_real = criterion(predict_real, real_labels)
     loss_on_real.backward()
 
     # 2. train on fake data
-    predic_fake = discriminator(fake_data).view(-1)
-    loss_on_fake = criterion(predic_fake, fake_labels)
+    predict_fake = discriminator(fake_data).view(-1)
+    loss_on_fake = criterion(predict_fake, fake_labels)
     loss_on_fake.backward()
 
     D_optimizer.step()
 
     loss = loss_on_real + loss_on_fake
 
-    return loss, predic_real, predic_fake
+    return loss, predict_real, predict_fake
 
 
 def train_generator(discriminator, G_optimizer, criterion, fake_data, real_labels):
