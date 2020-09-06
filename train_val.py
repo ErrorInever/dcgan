@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     logger.info('Init models')
 
-    generator = Generator(100, 3, args.ngpu).to(device)
+    generator = Generator(100, args.ngpu).to(device)
     # multi-gpu
     if (device.type == 'cuda') and (args.ngpu > 1):
         generator = torch.nn.DataParallel(generator, list(range(args.ngpu)))
@@ -66,9 +66,6 @@ if __name__ == "__main__":
     if (device.type == 'cuda') and (args.ngpu > 1):
         discriminator = torch.nn.DataParallel(discriminator, list(range(args.ngpu)))
     discriminator.apply(weights_init)
-
-    logger.info(generator)
-    logger.info(discriminator)
 
     criterion = nn.BCELoss()
 
