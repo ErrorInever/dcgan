@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument('--save_models', dest='save_models', help='save model', action='store_true')
     parser.add_argument('--tensorboard', dest='tensorboard', help='use tensorboard', action='store_true')
     parser.add_argument('--ngpu', dest='ngpu', help='Number of GPUs availablem. Use 0 for CPU', default=0, type=int)
+    parser.add_argument('--out_dir', dest='out_dir', help='Out directory', default='.', type=str)
 
     return parser.parse_args()
 
@@ -42,6 +43,8 @@ if __name__ == "__main__":
     logger.addHandler(ch)
 
     args = parse_args()
+    if args.out_dir:
+        cfg.OUT_DIR = args.out_dir
     set_random_seed(999)
 
     dataset = get_mnist_dataset()
@@ -83,5 +86,6 @@ if __name__ == "__main__":
 
     if args.save_models:
         metric_logger.save_models(generator, discriminator, cfg.NUM_EPOCHS)
+    metric_logger.dump_metrics()
     total_time = time.time() - start_time
     print('Training time {}'.format(total_time))

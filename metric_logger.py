@@ -2,6 +2,7 @@ import losswise
 import torch
 import os
 import errno
+import pickle
 import numpy as np
 import torchvision
 import logging
@@ -29,6 +30,12 @@ class MetricLogger:
 
         self.data_subdir = "{}/{}".format(model_name, dataset_name)
         self.comment = "{}/{}".format(model_name, dataset_name)
+
+        self.step = []
+        self.loss_g = []
+        self.loss_d = []
+        self.acc_real = []
+        self.acc_fake = []
 
         if self.ls_api_key:
             logger.info('Init losswise session')
@@ -66,6 +73,12 @@ class MetricLogger:
 
         step = MetricLogger._step(epoch, n_batch, num_batches)
 
+        self.loss_d.append(D_loss)
+        self.loss_g.append(G_loss)
+        self.acc_real.append(pred_real)
+        self.acc_fake.append(pred_fake)
+        self.step.append(step)
+
         if self.ls_api_key:
             self.graph_loss.append(step, {'Discriminator': D_loss, 'Generator': G_loss})
             self.graph_acc.append(step, {'D(x)': pred_real, 'D(G(z))': pred_fake})
@@ -94,7 +107,6 @@ class MetricLogger:
         img_name = '{}/images{}'.format(self.comment, '')
 
         self.tf_logger.add_image(img_name, horizontal_grid, step)
-
         self.save_torch_images(horizontal_grid, grid, epoch, n_batch)
 
     def save_torch_images(self, horizontal_grid, grid, epoch, n_batch, plot_horizontal=True, figsize=(16, 16)):
@@ -118,8 +130,8 @@ class MetricLogger:
         self._save_images(fig, epoch, n_batch, out_dir)
         plt.close()
 
-        fig = plt.figure()
-        plt.imshow(np.moveaxis(grid.detach().cpu().numpy(), 0, -1))
+        fig = plt.figure(figsize=(16, 16))
+        plt.imshow(np.moveaxis(grid.detach().cpu().numpy(), 0, -1), aspect='auto')
         plt.axis('off')
         self._save_images(fig, epoch, n_batch, out_dir)
         plt.close()
@@ -139,6 +151,29 @@ class MetricLogger:
                    '{}/G_epoch_{}'.format(out_dir, epoch))
         torch.save(discriminator.state_dict(),
                    '{}/D_epoch_{}'.format(out_dir, epoch))
+
+    def dump_metrics(self):
+        with open('data/loss_g.txt', 'wb') as fp:
+            pickle.dump(self.loss_g, fp)
+        with open('data/loss_d.txt', 'wb') as fp:
+            pickle.dump(self.loss_d, fp)
+        with open('data/acc_real.txt', 'wb') as fp:
+            pickle.dump(self.acc_real, fp)
+        with open('data/acc_fake.txt', 'wb') as fp:
+            pickle.dump(self.acc_fake, fp)
+
+    @staticmethod
+    def load_metrics():
+        with open('data/loss_g.txt', 'rb') as fp:
+            loss_g = pickle.load(fp)
+        with open('data/loss_d.txt', 'rb') as fp:
+            loss_d = pickle.load(fp)
+        with open('data/acc_real.txt', 'rb') as fp:
+            acc_real = pickle.load(fp)
+        with open('data/acc_fake.txt', 'rb') as fp:
+            acc_fake = pickle.load(fp)
+
+        return loss_g, loss_d, acc_real, acc_fake
 
     @staticmethod
     def display_status(epoch, num_epochs, n_batch, num_batches, dis_loss, gen_loss, acc_real, acc_fake):
