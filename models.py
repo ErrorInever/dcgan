@@ -21,22 +21,22 @@ class Generator(nn.Module):
         self.z_size = z_size
 
         self.head = nn.Sequential(
-            nn.ConvTranspose2d(self.z_size, 1024, 4, 1, 0),
+            nn.ConvTranspose2d(self.z_size, 1024, 4, 1, 0, bias=False),
             nn.BatchNorm2d(1024),
             nn.ReLU(inplace=True)
         )
 
         self.body = nn.Sequential(
-            nn.ConvTranspose2d(1024, 512, 4, 2, 1),
+            nn.ConvTranspose2d(1024, 512, 4, 2, 1, bias=False),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(512, 256, 4, 2, 1),
+            nn.ConvTranspose2d(512, 256, 4, 2, 1, bias=False),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(256, 128, 4, 2, 1),
+            nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(128, 3, 4, 2, 1),
+            nn.ConvTranspose2d(128, 3, 4, 2, 1, bias=False),
             nn.Tanh()
         )
 
@@ -45,6 +45,7 @@ class Generator(nn.Module):
         x = self.body(x)
         return x
 
+
 class Discriminator(nn.Module):
 
     def __init__(self, in_channels, ngpu):
@@ -52,21 +53,22 @@ class Discriminator(nn.Module):
         self.in_channels = in_channels
         self.ngpu = ngpu
 
-        self.body = nn.Sequential(
-            nn.Conv2d(self.in_channels, 128, 4, 2, 1),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv2d(128, 256, 4, 2, 1),
+        self.main = nn.Sequential(
+            nn.Conv2d(self.in_channels, 128, 4, 2, 1, bias=False),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(128, 256, 4, 2, 1, bias=False),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv2d(256, 512, 4, 2, 1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(256, 512, 4, 2, 1, bias=False),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv2d(512, 1024, 4, 2, 1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(512, 1024, 4, 2, 1, bias=False),
             nn.BatchNorm2d(1024),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv2d(1024, 1, 4, 1, 0),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(1024, 1, 4, 1, 0, bias=False),
             nn.Sigmoid()
         )
 
     def forward(self, x):
-        return self.body(x)
+        x = self.main(x)
+        return x
