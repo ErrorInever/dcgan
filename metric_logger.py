@@ -154,7 +154,7 @@ class MetricLogger:
 
     @staticmethod
     def checkpoint(epoch, model, optimizer):
-        out_dir = os.path.join(cfg.OUT_DIR, '/data/checkpoints')
+        out_dir = os.path.join(cfg.OUT_DIR, './data/checkpoints')
         MetricLogger._make_dir(out_dir)
         save_name = os.path.join(out_dir, '{}_{}.pth'.format(model.__class__.__name__, epoch))
         MetricLogger._save_checkpoint({
@@ -191,6 +191,23 @@ class MetricLogger:
             acc_fake = pickle.load(fp)
 
         return loss_g, loss_d, acc_real, acc_fake
+
+    def plot_metrics(self):
+        x = np.arange(0, len(self.step))
+        loss_g = np.asarray(self.loss_g)
+        loss_d = np.asarray(self.loss_d)
+
+        fig = plt.figure(figsize=(20, 12))
+        plt.style.use('fast')
+        plt.grid()
+        plt.title('Loss')
+        plt.xlabel('iter')
+        plt.ylabel('count')
+        plt.plot(x, loss_g, label='Generator loss')
+        plt.plot(x, loss_d, label='Discriminator loss')
+        plt.legend()
+        fig.savefig('loss.png')
+        plt.close()
 
     @staticmethod
     def display_status(epoch, num_epochs, n_batch, num_batches, dis_loss, gen_loss, acc_real, acc_fake):

@@ -97,5 +97,6 @@ if __name__ == "__main__":
         metric_logger.save_models(generator, discriminator, cfg.NUM_EPOCHS)
 
     metric_logger.dump_metrics()
+    metric_logger.plot_metrics()
     total_time = time.time() - start_time
     print('Training time {}'.format(total_time))
