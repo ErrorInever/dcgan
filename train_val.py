@@ -45,7 +45,7 @@ if __name__ == "__main__":
     args = parse_args()
     if args.out_dir:
         cfg.OUT_DIR = args.out_dir
-    set_random_seed(999)
+    set_random_seed(777)
 
     dataset = get_mnist_dataset()
     dataloader = DataLoader(dataset, batch_size=cfg.BATCH_SIZE, shuffle=True, num_workers=cfg.WORKERS)
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     logger.info('Init models')
 
-    generator = Generator(100, 1, args.ngpu).to(device)
+    generator = Generator(100, args.ngpu).to(device)
     # multi-gpu
     if (device.type == 'cuda') and (args.ngpu > 1):
         generator = torch.nn.DataParallel(generator, list(range(args.ngpu)))
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     criterion = nn.BCELoss()
 
-    static_noise = latent_space(64, device=device)
+    static_noise = latent_space(16, device=device)
 
     G_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
     D_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
