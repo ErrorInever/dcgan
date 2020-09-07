@@ -30,6 +30,8 @@ def parse_args():
     parser.add_argument('--tensorboard', dest='tensorboard', help='use tensorboard', action='store_true')
     parser.add_argument('--ngpu', dest='ngpu', help='Number of GPUs availablem. Use 0 for CPU', default=0, type=int)
     parser.add_argument('--out_dir', dest='out_dir', help='Out directory', default='.', type=str)
+    parser.add_argument('--resume_train', dest='resume_train', help='proceed train', action='store_true')
+    parser.add_argument('--path_models', dest='path_models', help='path to models.pth', default=None, type=str)
 
     return parser.parse_args()
 
@@ -44,6 +46,9 @@ if __name__ == "__main__":
     logger.addHandler(ch)
 
     args = parse_args()
+    if args.resume_train:
+        if not args.path_models:
+            raise ValueError('Path to models not specified')
     if args.out_dir:
         cfg.OUT_DIR = args.out_dir
     set_random_seed(777)
@@ -56,24 +61,28 @@ if __name__ == "__main__":
 
     logger.info('Init models')
 
-    generator = Generator(100, args.ngpu).to(device)
-    # multi-gpu
-    if (device.type == 'cuda') and (args.ngpu > 1):
-        generator = torch.nn.DataParallel(generator, list(range(args.ngpu)))
-    # init weights
-    generator.apply(weights_init)
+    if args.resume_train:
+        pass
+    else:
+        print('Initialize models')
+        generator = Generator(100, args.ngpu).to(device)
+        # multi-gpu
+        if (device.type == 'cuda') and (args.ngpu > 1):
+            generator = torch.nn.DataParallel(generator, list(range(args.ngpu)))
+        # init weights
+        generator.apply(weights_init)
 
-    discriminator = Discriminator(args.ngpu).to(device)
-    if (device.type == 'cuda') and (args.ngpu > 1):
-        discriminator = torch.nn.DataParallel(discriminator, list(range(args.ngpu)))
-    discriminator.apply(weights_init)
+        discriminator = Discriminator(args.ngpu).to(device)
+        if (device.type == 'cuda') and (args.ngpu > 1):
+            discriminator = torch.nn.DataParallel(discriminator, list(range(args.ngpu)))
+        discriminator.apply(weights_init)
+
+        G_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
+        D_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
 
     criterion = nn.BCELoss()
 
     static_noise = latent_space(16, device=device)
-
-    G_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
-    D_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.LEARNING_RATE, betas=(cfg.BETA_1, 0.999))
 
     metric_logger = MetricLogger('DCGAN', 'MNIST', losswise_api_key=args.api_key, tensorboard=args.tensorboard)
 
