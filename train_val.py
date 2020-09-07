@@ -55,14 +55,14 @@ if __name__ == "__main__":
 
     logger.info('Init models')
 
-    generator = Generator(100, args.ngpu).to(device)
+    generator = Generator(100, 1, args.ngpu).to(device)
     # multi-gpu
     if (device.type == 'cuda') and (args.ngpu > 1):
         generator = torch.nn.DataParallel(generator, list(range(args.ngpu)))
     # init weights
     generator.apply(weights_init)
 
-    discriminator = Discriminator(3, args.ngpu).to(device)
+    discriminator = Discriminator(args.ngpu).to(device)
     if (device.type == 'cuda') and (args.ngpu > 1):
         discriminator = torch.nn.DataParallel(discriminator, list(range(args.ngpu)))
     discriminator.apply(weights_init)
