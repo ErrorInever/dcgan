@@ -152,6 +152,23 @@ class MetricLogger:
         torch.save(discriminator.state_dict(),
                    '{}/D_epoch_{}'.format(out_dir, epoch))
 
+    @staticmethod
+    def checkpoint(epoch, model, optimizer):
+        out_dir = os.path.join(cfg.OUT_DIR, '/data/checkpoints')
+        MetricLogger._make_dir(out_dir)
+        save_name = os.path.join(out_dir, '{}_{}.pth'.format(model.__class__.__name__, epoch))
+        MetricLogger._save_checkpoint({
+            'start_epoch': epoch + 1,
+            'model': model.state_dict(),
+            'optimizer': optimizer.state_dict()
+        }, save_name
+        )
+        print('Save model {}'.format(save_name))
+
+    @staticmethod
+    def _save_checkpoint(state, filename):
+        torch.save(state, filename)
+
     def dump_metrics(self):
         with open('data/loss_g.txt', 'wb') as fp:
             pickle.dump(self.loss_g, fp)

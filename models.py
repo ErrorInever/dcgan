@@ -22,7 +22,7 @@ class Generator(nn.Module):
         self.ngpu = ngpu
 
         self.main = nn.Sequential(
-            nn.ConvTranspose2d(z_size, 1024, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(self.z_size, 1024, 4, 1, 0, bias=False),
             nn.BatchNorm2d(1024),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(1024, 512, 4, 2, 1, bias=False),
@@ -33,7 +33,7 @@ class Generator(nn.Module):
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),
             nn.BatchNorm2d(128),
-            # relu
+            nn.ReLU(inplace=True),
             nn.ConvTranspose2d(128, out_channels, 4, 2, 1, bias=False),
             nn.Tanh()
         )

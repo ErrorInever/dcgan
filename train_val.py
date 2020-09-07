@@ -25,7 +25,8 @@ def set_random_seed(val):
 def parse_args():
     parser = argparse.ArgumentParser(description='dcGAN')
     parser.add_argument('--api_key', dest='api_key', help='losswise api key', default=None, type=str)
-    parser.add_argument('--save_models', dest='save_models', help='save model', action='store_true')
+    parser.add_argument('--save_models', dest='save_models', help='save models after training', action='store_true')
+    parser.add_argument('--save_state', dest='save_state', help='save state each epoch', default=10, type=int)
     parser.add_argument('--tensorboard', dest='tensorboard', help='use tensorboard', action='store_true')
     parser.add_argument('--ngpu', dest='ngpu', help='Number of GPUs availablem. Use 0 for CPU', default=0, type=int)
     parser.add_argument('--out_dir', dest='out_dir', help='Out directory', default='.', type=str)
@@ -80,9 +81,12 @@ if __name__ == "__main__":
     for epoch in range(cfg.NUM_EPOCHS):
         train_one_epoch(generator, discriminator, dataloader, G_optimizer, D_optimizer, criterion, device, epoch,
                         static_noise, metric_logger, num_sumples=16, freq=100)
-
+        if epoch % args.save_state == 0:
+            MetricLogger.checkpoint(epoch, generator, G_optimizer)
+            MetricLogger.checkpoint(epoch, discriminator, D_optimizer)
     if args.save_models:
         metric_logger.save_models(generator, discriminator, cfg.NUM_EPOCHS)
+
     metric_logger.dump_metrics()
     total_time = time.time() - start_time
     print('Training time {}'.format(total_time))
